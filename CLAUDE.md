@@ -1,42 +1,46 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Этот файл содержит руководство для Claude Code (claude.ai/code) при работе с кодом в этом репозитории.
 
-## Project Overview
+## Обзор проекта
 
-Orai is a Python project (version 0.1.0) currently in early development stage. The project uses Python 3.12+ and is managed with uv package manager.
+Orai — это Python-проект (версия 0.1.0), находящийся на ранней стадии разработки. Проект использует Python 3.12+ и управляется пакетным менеджером uv.
 
-## Development Environment
+## Окружение для разработки
 
-The project uses:
-- Python 3.12 (specified in `.python-version`)
-- uv for dependency management (indicated by `pyproject.toml`)
-- Virtual environment in `.venv/`
+Проект использует:
+- Python 3.12 (указано в `.python-version`)
+- uv для управления зависимостями (указано в `pyproject.toml`)
+- Виртуальное окружение в `.venv/`
 
-### Setup Commands
+### Команды для настройки
 
-Activate the virtual environment:
+Активировать виртуальное окружение:
 ```bash
 source .venv/bin/activate
 ```
 
-Run the main application:
+Запустить основное приложение:
 ```bash
 python main.py
 ```
 
-Install dependencies (when added):
+Установить зависимости (когда будут добавлены):
 ```bash
 uv pip install -e .
 ```
 
-## Project Structure
+## Структура проекта
 
-Currently minimal structure:
-- `main.py` - Entry point with a `main()` function
-- `pyproject.toml` - Project metadata and dependencies
-- `.venv/` - Virtual environment
+Текущая минимальная структура:
+- `main.py` - точка входа с функцией `main()`
+- `pyproject.toml` - метаданные проекта и зависимости
+- `.venv/` - виртуальное окружение
 
-## Architecture Notes
+## Соглашения о коде
 
-The project is in its initial state. As it grows, architectural patterns and conventions should be documented here.
+**ВАЖНО:** Все комментарии в коде должны быть написаны на русском языке.
+
+## Архитектурные заметки
+
+Проект находится в начальном состоянии. По мере роста проекта здесь должны быть задокументированы архитектурные паттерны и соглашения.
