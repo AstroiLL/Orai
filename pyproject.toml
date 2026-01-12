@@ -1,7 +1,9 @@
 [project]
 name = "orai"
 version = "0.1.0"
-description = "Add your description here"
+description = "Агентная система на базе PocketFlow"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pocketflow>=0.0.1"
+]
