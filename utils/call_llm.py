@@ -2,137 +2,69 @@
 Утилита для вызова LLM (Language Model).
 
 Предоставляет функции для отправки запросов к языковым моделям
-и получения ответов. Текущая версия содержит mock-реализацию
-для демонстрации работы архитектуры.
-
-TODO: Интегрировать реальный API LLM (OpenAI, Anthropic, локальная модель и т.д.)
+и получения ответов. Использует OpenAI API.
 """
 
-import time
+import os
+from typing import Optional
+
+from dotenv import load_dotenv
+from openai import OpenAI
+
+# Загрузка переменных окружения из .env файла
+load_dotenv()
+
+# Инициализация клиента OpenAI
+_api_key: Optional[str] = os.getenv("OPENAI_API_KEY")
+_base_url: Optional[str] = os.getenv("OPENAI_BASE_URL")
+_default_model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+if _api_key:
+    client = OpenAI(api_key=_api_key, base_url=_base_url)
+else:
+    client = None
 
 
-def call_llm(prompt: str, model: str = "mock", temperature: float = 0.7) -> str:
+def call_llm(prompt: str, model: str = None, temperature: float = 0.7) -> str:
     """
     Отправляет запрос к LLM и возвращает ответ.
 
-    В текущей версии используется mock-реализация для демонстрации.
-    Для продакшн-использования необходимо заменить на реальный API вызов.
-
     Args:
         prompt: Текст запроса к LLM
-        model: Название модели (по умолчанию "mock")
+        model: Название модели (по умолчанию из OPENAI_MODEL или "gpt-4o-mini")
         temperature: Параметр температуры для генерации (0.0 - 1.0)
 
     Returns:
         str: Ответ от LLM
 
+    Raises:
+        ValueError: Если не настроен API ключ
+        Exception: При ошибке API вызова
+
     Example:
         >>> response = call_llm("Что такое агентная система?")
         >>> print(response)
-
-    TODO: Реализовать интеграцию с реальным LLM API:
-    - OpenAI GPT-4 (через библиотеку openai)
-    - Anthropic Claude (через библиотеку anthropic)
-    - Локальная модель через Ollama
-    - Другие провайдеры
     """
-    # Имитация задержки API вызова
-    time.sleep(0.5)
+    if client is None:
+        raise ValueError(
+            "OpenAI API ключ не найден. Установите переменную OPENAI_API_KEY в .env файле"
+        )
 
-    # Mock-ответы в зависимости от содержимого промпта
-    if "анализ" in prompt.lower() or "проанализируй" in prompt.lower():
-        return _generate_analysis_response(prompt)
-    elif "решение" in prompt.lower() or "определи" in prompt.lower():
-        return _generate_decision_response(prompt)
-    elif "выполни" in prompt.lower() or "действие" in prompt.lower():
-        return _generate_action_response(prompt)
-    else:
-        return _generate_generic_response(prompt)
+    if model is None:
+        model = _default_model
 
-
-def _generate_analysis_response(prompt: str) -> str:
-    """
-    Генерирует mock-ответ для запросов на анализ.
-
-    Args:
-        prompt: Исходный промпт
-
-    Returns:
-        str: Mock-ответ с анализом
-    """
-    return """Анализ запроса:
-1. Тип задачи: Информационный запрос, требующий структурированного ответа
-2. Ключевые элементы: Необходимо предоставить чёткую информацию с примерами
-3. Рекомендуемый подход: Использовать пошаговое объяснение с конкретными примерами
-
-Запрос относится к категории задач, требующих систематического подхода к решению."""
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        raise Exception(f"Ошибка при вызове LLM: {e}") from e
 
 
-def _generate_decision_response(prompt: str) -> str:
-    """
-    Генерирует mock-ответ для запросов на принятие решения.
-
-    Args:
-        prompt: Исходный промпт
-
-    Returns:
-        str: Mock-ответ с решением
-    """
-    return """Предоставить детальный структурированный ответ с объяснениями и примерами."""
-
-
-def _generate_action_response(prompt: str) -> str:
-    """
-    Генерирует mock-ответ для запросов на выполнение действия.
-
-    Args:
-        prompt: Исходный промпт
-
-    Returns:
-        str: Mock-ответ с результатом действия
-    """
-    return """Демонстрационный ответ агентной системы Orai:
-
-Это mock-реализация LLM вызова для демонстрации работы архитектуры PocketFlow.
-
-Агентная система успешно обработала ваш запрос через следующие этапы:
-- Получение и валидация входных данных
-- Анализ задачи с определением типа и контекста
-- Принятие решения о наиболее подходящем подходе
-- Выполнение соответствующего действия
-
-Для получения реальных ответов от LLM необходимо:
-1. Выбрать провайдера LLM (OpenAI, Anthropic, локальная модель)
-2. Получить API ключ
-3. Установить соответствующую библиотеку (openai, anthropic и т.д.)
-4. Обновить функцию call_llm() в utils/call_llm.py
-
-Текущая версия демонстрирует корректную работу потока узлов и
-передачу данных через общее хранилище (shared store)."""
-
-
-def _generate_generic_response(prompt: str) -> str:
-    """
-    Генерирует общий mock-ответ.
-
-    Args:
-        prompt: Исходный промпт
-
-    Returns:
-        str: Общий mock-ответ
-    """
-    return f"""Получен запрос к LLM (mock-режим).
-
-Исходный промпт содержал {len(prompt)} символов.
-
-Это демонстрационный ответ, показывающий работу агентной системы Orai
-на базе PocketFlow фреймворка.
-
-Для работы с реальным LLM необходимо обновить функцию call_llm()
-в файле utils/call_llm.py, добавив интеграцию с выбранным API."""
-
-
-# Дополнительные утилитарные функции для будущего расширения
+# Дополнительные утилитарные функции
 
 def validate_prompt(prompt: str) -> bool:
     """
@@ -146,7 +78,7 @@ def validate_prompt(prompt: str) -> bool:
     """
     if not prompt or not prompt.strip():
         return False
-    if len(prompt) > 100000:  # Примерное ограничение
+    if len(prompt) > 100000:
         return False
     return True
 
@@ -167,3 +99,35 @@ def format_prompt(template: str, **kwargs) -> str:
         >>> prompt = format_prompt(template, question="Что такое AI?", context="ML курс")
     """
     return template.format(**kwargs)
+
+
+def get_models() -> list[str]:
+    """
+    Получает список доступных моделей.
+
+    Returns:
+        list[str]: Список идентификаторов моделей
+
+    Raises:
+        ValueError: Если не настроен API ключ
+    """
+    if client is None:
+        raise ValueError(
+            "OpenAI API ключ не найден. Установите переменную OPENAI_API_KEY в .env файле"
+        )
+
+    try:
+        models = client.models.list()
+        return [m.id for m in models.data]
+    except Exception as e:
+        raise Exception(f"Ошибка при получении списка моделей: {e}") from e
+
+
+def is_configured() -> bool:
+    """
+    Проверяет, настроен ли OpenAI клиент.
+
+    Returns:
+        bool: True если API ключ установлен, иначе False
+    """
+    return client is not None
